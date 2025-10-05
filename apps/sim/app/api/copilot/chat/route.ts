@@ -19,12 +19,120 @@ import { SIM_AGENT_API_URL_DEFAULT, SIM_AGENT_VERSION } from '@/lib/sim-agent/co
 import { generateChatTitle } from '@/lib/sim-agent/utils'
 import { createFileContent, isSupportedFileType } from '@/lib/uploads/file-utils'
 import { S3_COPILOT_CONFIG } from '@/lib/uploads/setup'
-import { downloadFile, getStorageProvider } from '@/lib/uploads/storage-client'
+import { generateRequestId } from '@/lib/utils'
+import { executeProviderRequest } from '@/providers'
+import type { ProviderRequest } from '@/providers/types'
 
 const logger = createLogger('CopilotChatAPI')
 
 const SIM_AGENT_API_URL = env.SIM_AGENT_API_URL || SIM_AGENT_API_URL_DEFAULT
 
+// Local provider support
+function shouldUseLocalProvider(providerId: string): boolean {
+  const localProviders = ['groq', 'cerebras', 'ollama', 'google', 'openai', 'anthropic', 'mistral', 'cohere']
+  return localProviders.includes(providerId)
+}
+
+function getProviderApiKey(providerId: string): string | undefined {
+  switch (providerId) {
+    case 'groq':
+      return env.GROQ_API_KEY
+    case 'cerebras':
+      return env.CEREBRAS_API_KEY
+    case 'google':
+      return env.GOOGLE_API_KEY
+    case 'openai':
+      return env.OPENAI_API_KEY
+    case 'anthropic':
+      return env.ANTHROPIC_API_KEY_1
+    case 'mistral':
+      return env.MISTRAL_API_KEY
+    case 'cohere':
+      return env.COHERE_API_KEY
+    case 'ollama':
+      return undefined // Ollama doesn't need API key
+    default:
+      return undefined
+  }
+}
+
+async function executeLocalCopilotRequest(
+  requestId: string,
+  providerConfig: CopilotProviderConfig,
+  messages: any[],
+  stream: boolean,
+  workflowId: string,
+  chatId: string,
+  messageId: string,
+  message: string,
+  fileAttachments?: any[],
+  contexts?: any[]
+): Promise<NextResponse> {
+  try {
+    logger.info(`[${requestId}] Using local provider: ${providerConfig.provider}`)
+
+    // Get API key for the provider
+    const apiKey = getProviderApiKey(providerConfig.provider)
+    if (providerConfig.provider !== 'ollama' && !apiKey) {
+      return NextResponse.json(
+        { error: `API key not found for provider: ${providerConfig.provider}` },
+        { status: 400 }
+      )
+    }
+
+    // Prepare provider request
+    const providerRequest: ProviderRequest = {
+      model: providerConfig.model || 'gpt-3.5-turbo',
+      messages: messages.map(msg => ({
+        role: msg.role,
+        content: msg.content
+      })),
+      stream: stream,
+      apiKey: apiKey || '', // Empty string for Ollama, actual key for others
+      temperature: 0.1,
+      maxTokens: 8192,
+      systemPrompt: 'You are a helpful AI assistant integrated with Sim AI. Respond concisely and accurately.',
+    }
+
+    // Add Ollama URL if using Ollama
+    if (providerConfig.provider === 'ollama') {
+      (providerRequest as any).baseUrl = env.OLLAMA_URL || 'http://localhost:11434'
+    }
+
+    // Execute request with local provider
+    const response = await executeProviderRequest(providerConfig.provider, providerRequest)
+
+    if (stream && response instanceof ReadableStream) {
+      // Return streaming response
+      return new NextResponse(response, {
+        status: 200,
+        headers: {
+          'Content-Type': 'text/stream-event',
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+        },
+      })
+    }
+
+    // Handle non-streaming response
+    if (typeof response === 'object' && 'content' in response) {
+      return NextResponse.json({
+        content: response.content,
+        model: providerConfig.model,
+        provider: providerConfig.provider
+      })
+    }
+
+    return NextResponse.json({ error: 'Invalid response from provider' }, { status: 500 })
+
+  } catch (error) {
+    logger.error(`[${requestId}] Local provider error:`, error)
+    return NextResponse.json(
+      { error: `Local provider error: ${error instanceof Error ? error.message : 'Unknown error'}` },
+      { status: 500 }
+    )
+  }
+}
 const FileAttachmentSchema = z.object({
   id: z.string(),
   key: z.string(),
@@ -348,10 +456,12 @@ export async function POST(req: NextRequest) {
           endpoint: env.AZURE_OPENAI_ENDPOINT,
         }
       } else {
+        // Use appropriate API key for each provider
+        const providerApiKey = getProviderApiKey(providerEnv) || env.COPILOT_API_KEY
         providerConfig = {
           provider: providerEnv,
           model: modelToUse,
-          apiKey: env.COPILOT_API_KEY,
+          apiKey: providerApiKey,
         }
       }
     }
@@ -392,6 +502,22 @@ export async function POST(req: NextRequest) {
         hasConversationId: !!effectiveConversationId,
       })
     } catch {}
+
+    // LOCAL BYPASS: Use local providers if configured
+    if (providerConfig && shouldUseLocalProvider(providerConfig.provider)) {
+      return await executeLocalCopilotRequest(
+        tracker.requestId,
+        providerConfig,
+        messagesForAgent,
+        stream,
+        workflowId,
+        actualChatId,
+        userMessageIdToUse,
+        message,
+        fileAttachments,
+        contexts
+      )
+    }
 
     const simAgentResponse = await fetch(`${SIM_AGENT_API_URL}/api/chat-completion-streaming`, {
       method: 'POST',

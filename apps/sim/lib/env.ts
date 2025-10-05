@@ -74,6 +74,10 @@ export const env = createEnv({
     ANTHROPIC_API_KEY_1:                   z.string().min(1).optional(),           // Primary Anthropic Claude API key
     ANTHROPIC_API_KEY_2:                   z.string().min(1).optional(),           // Additional Anthropic API key for load balancing
     ANTHROPIC_API_KEY_3:                   z.string().min(1).optional(),           // Additional Anthropic API key for load balancing
+    GROQ_API_KEY:                          z.string().min(1).optional(),           // Groq API key for fast inference
+    CEREBRAS_API_KEY:                      z.string().min(1).optional(),           // Cerebras API key for inference
+    GOOGLE_API_KEY:                        z.string().min(1).optional(),           // Google AI API key (Gemini)
+    COHERE_API_KEY:                        z.string().min(1).optional(),           // Cohere API key for language models
     OLLAMA_URL:                            z.string().url().optional(),            // Ollama local LLM server URL
     ELEVENLABS_API_KEY:                    z.string().min(1).optional(),           // ElevenLabs API key for text-to-speech in deployed chat
     SERPER_API_KEY:                        z.string().min(1).optional(),           // Serper API key for online search
