@@ -32,6 +32,10 @@ export const env = createEnv({
     COPILOT_PROVIDER:                      z.string().optional(),                  // Provider for copilot API calls
     COPILOT_MODEL:                         z.string().optional(),                  // Model for copilot API calls
     COPILOT_API_KEY:                       z.string().min(1).optional(),           // Secret for internal sim agent API authentication
+    COPILOT_CHAT_PROVIDER:                 z.string().optional(),                  // Provider for copilot chat/agent
+    COPILOT_CHAT_MODEL:                    z.string().optional(),                  // Model for copilot chat/agent
+    COPILOT_RAG_PROVIDER:                  z.string().optional(),                  // Provider for copilot RAG/search
+    COPILOT_RAG_MODEL:                     z.string().optional(),                  // Model for copilot RAG/search
     SIM_AGENT_API_URL:                     z.string().url().optional(),            // URL for internal sim agent API
     AGENT_INDEXER_URL:                     z.string().url().optional(),            // URL for agent training data indexer
     AGENT_INDEXER_API_KEY:                 z.string().min(1).optional(),           // API key for agent indexer authentication

@@ -1,7 +1,10 @@
 import { type NextRequest, NextResponse } from 'next/server'
 import { getSession } from '@/lib/auth'
 import { env } from '@/lib/env'
+import { createLogger } from '@/lib/logs/console/logger'
 import { SIM_AGENT_API_URL_DEFAULT } from '@/lib/sim-agent/constants'
+
+const logger = createLogger('CopilotGenerateAPIKeyAPI')
 
 export async function POST(req: NextRequest) {
   try {
@@ -12,10 +15,32 @@ export async function POST(req: NextRequest) {
 
     const userId = session.user.id
 
+    // LOCAL BYPASS: Handle local provider key generation
+    if (env.COPILOT_CHAT_PROVIDER && env.COPILOT_CHAT_PROVIDER !== 'sim-agent') {
+      logger.info('Handling local provider key generation', {
+        provider: env.COPILOT_CHAT_PROVIDER,
+        userId,
+      })
+      
+      return NextResponse.json({
+        key: {
+          apiKey: `local-provider-${env.COPILOT_CHAT_PROVIDER}-configured`,
+          id: 'local-provider-key',
+          displayKey: `***...local (${env.COPILOT_CHAT_PROVIDER})`,
+        },
+        message: 'Local provider is configured via environment variables'
+      })
+    }
+
     // Move environment variable access inside the function
     const SIM_AGENT_API_URL = env.SIM_AGENT_API_URL || SIM_AGENT_API_URL_DEFAULT
 
     await req.json().catch(() => ({}))
+
+    logger.info('Generating API key via Sim Agent', {
+      userId,
+      agentUrl: `${SIM_AGENT_API_URL}/api/validate-key/generate`,
+    })
 
     const res = await fetch(`${SIM_AGENT_API_URL}/api/validate-key/generate`, {
       method: 'POST',

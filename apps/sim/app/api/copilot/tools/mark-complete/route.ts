@@ -15,6 +15,23 @@ const logger = createLogger('CopilotMarkToolCompleteAPI')
 
 const SIM_AGENT_API_URL = env.SIM_AGENT_API_URL || SIM_AGENT_API_URL_DEFAULT
 
+// Local tool completion handler
+function handleLocalToolCompletion(parsed: any): NextResponse {
+  logger.info('Handling tool completion locally', {
+    toolCallId: parsed.id,
+    toolName: parsed.name,
+    status: parsed.status,
+  })
+  
+  // For local operation, we just acknowledge the completion
+  // In a full implementation, this could update local state/logs
+  return NextResponse.json({ 
+    success: true, 
+    message: 'Tool marked as complete locally',
+    local: true 
+  })
+}
+
 const MarkCompleteSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -58,7 +75,17 @@ export async function POST(req: NextRequest) {
       }
     })()
 
-    logger.info(`[${tracker.requestId}] Forwarding tool mark-complete`, {
+    // LOCAL BYPASS: Handle tool completion locally if using local providers
+    if (env.COPILOT_CHAT_PROVIDER && env.COPILOT_CHAT_PROVIDER !== 'sim-agent') {
+      logger.info(`[${tracker.requestId}] Using local tool completion handler`, {
+        provider: env.COPILOT_CHAT_PROVIDER,
+        toolCallId: parsed.id,
+        toolName: parsed.name,
+      })
+      return handleLocalToolCompletion(parsed)
+    }
+
+    logger.info(`[${tracker.requestId}] Forwarding tool mark-complete to Sim Agent`, {
       userId,
       toolCallId: parsed.id,
       toolName: parsed.name,

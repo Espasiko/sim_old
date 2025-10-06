@@ -8,9 +8,28 @@ import {
   createUnauthorizedResponse,
 } from '@/lib/copilot/auth'
 import { env } from '@/lib/env'
+import { createLogger } from '@/lib/logs/console/logger'
 import { SIM_AGENT_API_URL_DEFAULT } from '@/lib/sim-agent/constants'
 
+const logger = createLogger('CopilotStatsAPI')
 const SIM_AGENT_API_URL = env.SIM_AGENT_API_URL || SIM_AGENT_API_URL_DEFAULT
+
+// Local stats handler
+function handleLocalStats(messageId: string, diffCreated: boolean, diffAccepted: boolean): NextResponse {
+  logger.info('Handling copilot stats locally', {
+    messageId,
+    diffCreated,
+    diffAccepted,
+  })
+  
+  // For local operation, we just acknowledge the stats
+  // In a full implementation, this could store stats in local database
+  return NextResponse.json({ 
+    success: true, 
+    message: 'Stats recorded locally',
+    local: true 
+  })
+}
 
 const BodySchema = z.object({
   messageId: z.string(),
@@ -34,12 +53,26 @@ export async function POST(req: NextRequest) {
 
     const { messageId, diffCreated, diffAccepted } = parsed.data as any
 
+    // LOCAL BYPASS: Handle stats locally if using local providers
+    if (env.COPILOT_CHAT_PROVIDER && env.COPILOT_CHAT_PROVIDER !== 'sim-agent') {
+      logger.info(`[${tracker.requestId}] Using local stats handler`, {
+        provider: env.COPILOT_CHAT_PROVIDER,
+        messageId,
+      })
+      return handleLocalStats(messageId, diffCreated, diffAccepted)
+    }
+
     // Build outgoing payload for Sim Agent with only required fields
     const payload: Record<string, any> = {
       messageId,
       diffCreated,
       diffAccepted,
     }
+
+    logger.info(`[${tracker.requestId}] Forwarding stats to Sim Agent`, {
+      messageId,
+      agentUrl: `${SIM_AGENT_API_URL}/api/stats`,
+    })
 
     const agentRes = await fetch(`${SIM_AGENT_API_URL}/api/stats`, {
       method: 'POST',
