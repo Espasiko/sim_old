@@ -1,0 +1,712 @@
+{
+  "version": "1.0",
+  "exportedAt": "2025-10-10T19:42:46.527Z",
+  "state": {
+    "blocks": {
+      "381ab565-b911-4bc5-a3cf-440aba195a24": {
+        "id": "381ab565-b911-4bc5-a3cf-440aba195a24",
+        "type": "agent",
+        "name": "Searcher",
+        "position": {
+          "x": -430.0736137940899,
+          "y": 497.51395316713115
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 1742.328125,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "groq/openai/gpt-oss-120b"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": [
+              {
+                "type": "exa",
+                "title": "Exa",
+                "params": {
+                  "apiKey": "{{EXA_KEY}}"
+                },
+                "operation": "exa_search",
+                "isExpanded": true,
+                "usageControl": "auto"
+              },
+              {
+                "type": "exa",
+                "title": "Exa",
+                "params": {
+                  "apiKey": "{{EXA_KEY}}"
+                },
+                "operation": "exa_get_contents",
+                "isExpanded": true,
+                "usageControl": "auto"
+              }
+            ]
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": ""
+          },
+          "memories": {
+            "id": "memories",
+            "type": "short-input",
+            "value": null
+          },
+          "userPrompt": {
+            "id": "userPrompt",
+            "type": "long-input",
+            "value": "fintech company founders"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": null
+          },
+          "systemPrompt": {
+            "id": "systemPrompt",
+            "type": "long-input",
+            "value": "You are a professional contact research agent specializing in discovering accurate and relevant contact information through strategic web searches. Your task is to identify valid contacts for a given target field or niche provided in the user prompt by conducting multiple search strategies and returning results in a clean, structured format.\n\nSEARCH STRATEGY:\n1. Perform at least 3 to 5 distinct Exa searches using varied approaches:\n   - Broad industry/topic searches (e.g., “fintech leadership emails”)\n   - Specific company or organization name searches\n   - Contact pages, directories, and leadership pages\n   - Individual profiles and press mentions\n   - Team, about, or people-related pages\n\n2. Vary each search query:\n   - Use synonyms and alternate phrases (e.g., \"exec team\", \"company leadership\")\n   - Combine formal and informal terms\n   - Use modifiers like “contact,” “team,” “leadership,” “email,” “about,” etc.\n   - Add geographic or industry-specific keywords when useful\n\n3. Diversify sources:\n   - Explore different domains (.com, .org, .io, etc.)\n   - Include social, company, media, or industry-specific sites\n   - Avoid pulling more than 2 results from the same domain\n\nRESEARCH EXECUTION:\n- Begin with the broadest query related to the user prompt\n- Progress through narrower, more targeted queries\n- Use `Exa Get Contents` to extract information from promising links\n- Continue iterating until a strong and diverse set of contacts is found or all strategies are exhausted\n\nOUTPUT FORMAT:\nYou must return your results in the following JSON format:\n\n```json\n{\n  \"contacts\": [\n    {\n      \"email\": \"contact@company.com\",\n      \"name\": \"John Smith\",\n      \"company\": \"Acme Corporation\",\n      \"source_url\": \"https://example.com/contact\",\n      \"title\": \"VP of Sales\" // optional\n    }\n  ],\n  \"search_summary\": {\n    \"total_contacts\": 5,\n    \"unique_companies\": 3,\n    \"sources_searched\": 8,\n    \"query_variations_used\": [\"query1\", \"query2\", \"query3\"]\n  }\n}\n```\n\nFIELD REQUIREMENTS:\n- **email**: Must be a valid and relevant email address\n- **name**: Full name preferred; first name required at minimum\n- **company**: Official company name\n- **source_url**: Direct page where the contact was discovered\n- **title**: Optional, include if available and relevant\n\nDATA VALIDATION:\n- Verify the email address format\n- Ensure each contact is associated with a valid company and not a general mailbox (avoid info@, support@ unless no better option exists)\n- Remove duplicates from the same domain or contact\n- Do not include any contacts if a valid email is not found\n\nRESEARCH PRINCIPLES:\n- Prioritize quality over quantity\n- Use trusted and diverse sources\n- Focus on relevance to the user’s niche or instruction\n- Never fabricate data\n\nYour output must be complete, structured, and actionable. Use the user prompt to understand the target field or industry for which you are sourcing contacts."
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n  \"name\": \"contact_extraction\",\n  \"description\": \"Extract contact information and return as array of arrays\",\n  \"strict\": true,\n  \"schema\": {\n    \"type\": \"object\",\n    \"properties\": {\n      \"contacts\": {\n        \"type\": \"array\",\n        \"description\": \"Array of contact arrays, where each inner array contains [email, name, company, source_url, title]\",\n        \"items\": {\n          \"type\": \"array\",\n          \"description\": \"Individual contact as array: [email, name, company, source_url, title]\",\n          \"items\": {\n            \"type\": \"string\"\n          },\n          \"minItems\": 5,\n          \"maxItems\": 5\n        }\n      }\n    },\n    \"required\": [\"contacts\"],\n    \"additionalProperties\": false\n  }\n}"
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "model": "string",
+          "tokens": "any",
+          "content": "string",
+          "toolCalls": "any"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 477.328125,
+          "measuredHeight": 1742.328125
+        }
+      },
+      "aff609fd-1b04-4ef1-95e8-1c28a7b99df9": {
+        "id": "aff609fd-1b04-4ef1-95e8-1c28a7b99df9",
+        "type": "google_sheets",
+        "name": "Google Sheets 2",
+        "position": {
+          "x": 1914.1153503944922,
+          "y": 664.7722929301242
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 614,
+        "subBlocks": {
+          "range": {
+            "id": "range",
+            "type": "short-input",
+            "value": "Sheet1!A2:E1000"
+          },
+          "values": {
+            "id": "values",
+            "type": "long-input",
+            "value": "<duplicates.result>"
+          },
+          "operation": {
+            "id": "operation",
+            "type": "dropdown",
+            "value": "append"
+          },
+          "credential": {
+            "id": "credential",
+            "type": "oauth-input",
+            "value": ""
+          },
+          "spreadsheetId": {
+            "id": "spreadsheetId",
+            "type": "file-selector",
+            "value": "1cp6EuTo81DUUKg-m5c_sqYr1QgaS3xmO9JY-Ph6a63k"
+          },
+          "insertDataOption": {
+            "id": "insertDataOption",
+            "type": "dropdown",
+            "value": "INSERT_ROWS"
+          },
+          "valueInputOption": {
+            "id": "valueInputOption",
+            "type": "dropdown",
+            "value": "USER_ENTERED"
+          },
+          "manualSpreadsheetId": {
+            "id": "manualSpreadsheetId",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "data": "json",
+          "metadata": "json",
+          "tableRange": "string",
+          "updatedRows": "number",
+          "updatedCells": "number",
+          "updatedRange": "string",
+          "updatedColumns": "number"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 614
+        }
+      },
+      "4b2b8956-1690-4e4c-be97-aa4e610b598c": {
+        "id": "4b2b8956-1690-4e4c-be97-aa4e610b598c",
+        "type": "loop",
+        "name": "Loop 1",
+        "position": {
+          "x": 2655.4137316099946,
+          "y": 358.8695180176463
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 0,
+        "subBlocks": {},
+        "outputs": {},
+        "data": {
+          "id": "39fce640-179e-4a8a-90be-8bd42596367b",
+          "type": "loopNode",
+          "count": 2,
+          "nodes": [
+            "5166811a-4361-435b-be59-d47d0fc9a000",
+            "ed784aa5-26fd-4c8a-9f26-a7c5678b5383"
+          ],
+          "width": 500,
+          "height": 300,
+          "loopType": "forEach",
+          "collection": "<duplicates.result>",
+          "iterations": 2,
+          "forEachItems": "<duplicates.result>"
+        },
+        "layout": {
+          "measuredWidth": 500,
+          "measuredHeight": 300
+        }
+      },
+      "7bf640e7-e3cb-4a5d-911e-f806c33370b8": {
+        "id": "7bf640e7-e3cb-4a5d-911e-f806c33370b8",
+        "type": "function",
+        "name": "Function 2",
+        "position": {
+          "x": 1912.8194740690212,
+          "y": 1651.588717899706
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 182.65625,
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "return \"Agent researched duplicate contacts\""
+          }
+        },
+        "outputs": {
+          "result": "any",
+          "stdout": "string"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 182.65625
+        }
+      },
+      "b0eb30e3-c46e-4bad-b5f1-a08baf59de55": {
+        "id": "b0eb30e3-c46e-4bad-b5f1-a08baf59de55",
+        "type": "function",
+        "name": "Duplicates",
+        "position": {
+          "x": 809.3826190201961,
+          "y": 1176.7687039635503
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 394.65625,
+        "subBlocks": {
+          "code": {
+            "id": "code",
+            "type": "code",
+            "value": "const contacts = <searcher.contacts>;\nconst leads = <leads.data.values>;\n\nconst leadsSet = new Set(leads.map(lead => lead[0]));\n\nconst filteredContacts = contacts.filter(contact => !leadsSet.has(contact[0]));\n\nreturn filteredContacts;"
+          }
+        },
+        "outputs": {
+          "result": "any",
+          "stdout": "string"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 394.65625
+        }
+      },
+      "ad793686-cd39-4432-a288-5eb39f4fc6eb": {
+        "id": "ad793686-cd39-4432-a288-5eb39f4fc6eb",
+        "type": "agent",
+        "name": "Emailer",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": true,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 1161.65625,
+        "subBlocks": {
+          "model": {
+            "id": "model",
+            "type": "combobox",
+            "value": "gpt-4o"
+          },
+          "tools": {
+            "id": "tools",
+            "type": "tool-input",
+            "value": []
+          },
+          "apiKey": {
+            "id": "apiKey",
+            "type": "short-input",
+            "value": ""
+          },
+          "memories": {
+            "id": "memories",
+            "type": "short-input",
+            "value": null
+          },
+          "userPrompt": {
+            "id": "userPrompt",
+            "type": "long-input",
+            "value": "<variable.GrowthEquityPersona>"
+          },
+          "temperature": {
+            "id": "temperature",
+            "type": "slider",
+            "value": null
+          },
+          "systemPrompt": {
+            "id": "systemPrompt",
+            "type": "long-input",
+            "value": "You are a professional cold email generator specializing in creating friendly, personalized outreach emails. Your task is to generate compelling cold emails based on the specific instructions and persona provided in the user prompt.\n\nCONTACT INFORMATION ACCESS:\nYou have access to the following contact details here: <loop.currentItem>\n\nEMAIL GENERATION REQUIREMENTS:\n1. PERSONALIZATION: Always incorporate the recipient's name, company, and title (if available) naturally into the email\n2. TONE: Maintain a friendly, professional, and conversational tone throughout\n3. RELEVANCE: Tailor the message to be relevant to their company and role\n4. VALUE PROPOSITION: Clearly articulate the value or benefit you're offering\n5. CALL TO ACTION: Include a clear, low-pressure next step\n6. BREVITY: Keep emails concise and scannable (150-250 words ideal)\n7. SUBJECT LINE: Generate an engaging, personalized subject line\n\nEMAIL STRUCTURE:\n- Subject line\n- Personalized greeting using their name\n- Brief, relevant opening that shows you've researched their company\n- Clear value proposition tied to their business needs\n- Social proof or credibility indicators when appropriate\n- Soft call to action\n- Professional closing\n\nPERSONALIZATION STRATEGIES:\n- Reference their company's recent achievements, industry challenges, or business model\n- Mention their role and how your offering relates to their responsibilities\n- Use the source URL context to understand their company better\n- Avoid generic templates - make each email feel individually crafted\n\nTONE GUIDELINES:\n- Conversational and approachable, not salesy\n- Respectful of their time\n- Confident but not pushy\n- Professional yet human\nOUTPUT FORMAT:\nYou must return your response in the following JSON structure:\n\n```json\n{\n\"email\": the email address found in the system prompt\n  \"subject\": \"Your personalized subject line here\",\n  \"email_body\": \"Your complete email body content here with proper formatting and line breaks\"\n}\n```\n\nSTRUCTURED OUTPUT REQUIREMENTS:\n- subject: Create an engaging, personalized subject line (50-60 characters ideal)\n- email_body: Complete email content with proper formatting, line breaks, and personalization\n\nGenerate the cold email based on the user's specific instructions and persona requirements, ensuring full personalization using the contact information provided in the use prompt. Always return the response in the specified JSON format."
+          },
+          "azureEndpoint": {
+            "id": "azureEndpoint",
+            "type": "short-input",
+            "value": null
+          },
+          "responseFormat": {
+            "id": "responseFormat",
+            "type": "code",
+            "value": "{\n    \"name\": \"email_generation\",\n    \"description\": \"Generate cold email with subject line, body content, and recipient email address\",\n    \"strict\": true,\n    \"schema\": {\n        \"type\": \"object\",\n        \"properties\": {\n            \"subject\": {\n                \"type\": \"string\",\n                \"description\": \"Personalized email subject line (50-60 characters ideal)\"\n            },\n            \"email_body\": {\n                \"type\": \"string\",\n                \"description\": \"Complete email body content with proper formatting and personalization\"\n            },\n            \"email\": {\n                \"type\": \"string\",\n                \"description\": \"Recipient's email address\"\n            }\n        },\n        \"required\": [\"subject\", \"email_body\", \"email\"],\n        \"additionalProperties\": false\n    }\n}"
+          },
+          "azureApiVersion": {
+            "id": "azureApiVersion",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "model": "string",
+          "tokens": "any",
+          "content": "string",
+          "toolCalls": "any"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 477.328125,
+          "measuredHeight": 1161.65625
+        }
+      },
+      "3b3b9dfe-2d80-41a4-ae94-e059911d9b30": {
+        "id": "3b3b9dfe-2d80-41a4-ae94-e059911d9b30",
+        "type": "outlook",
+        "name": "Outlook 2",
+        "position": {
+          "x": 0,
+          "y": 0
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 458,
+        "subBlocks": {
+          "to": {
+            "id": "to",
+            "type": "short-input",
+            "value": "<emailer.email>"
+          },
+          "body": {
+            "id": "body",
+            "type": "long-input",
+            "value": "<emailer.email_body>"
+          },
+          "folder": {
+            "id": "folder",
+            "type": "folder-selector",
+            "value": null
+          },
+          "subject": {
+            "id": "subject",
+            "type": "short-input",
+            "value": "<emailer.subject>"
+          },
+          "operation": {
+            "id": "operation",
+            "type": "dropdown",
+            "value": "draft_outlook"
+          },
+          "credential": {
+            "id": "credential",
+            "type": "oauth-input",
+            "value": ""
+          },
+          "maxResults": {
+            "id": "maxResults",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "message": "string",
+          "results": "json"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 458
+        }
+      },
+      "52ad8f1d-4af4-4611-9cc6-1239973ba0bd": {
+        "id": "52ad8f1d-4af4-4611-9cc6-1239973ba0bd",
+        "type": "starter",
+        "name": "Start",
+        "position": {
+          "x": -1121.102093928942,
+          "y": 1297.6568985818299
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 90,
+        "subBlocks": {
+          "timezone": {
+            "id": "timezone",
+            "type": "dropdown",
+            "value": "UTC"
+          },
+          "dailyTime": {
+            "id": "dailyTime",
+            "type": "short-input",
+            "value": ""
+          },
+          "weeklyDay": {
+            "id": "weeklyDay",
+            "type": "dropdown",
+            "value": "MON"
+          },
+          "monthlyDay": {
+            "id": "monthlyDay",
+            "type": "short-input",
+            "value": ""
+          },
+          "monthlyTime": {
+            "id": "monthlyTime",
+            "type": "short-input",
+            "value": ""
+          },
+          "webhookPath": {
+            "id": "webhookPath",
+            "type": "short-input",
+            "value": ""
+          },
+          "hourlyMinute": {
+            "id": "hourlyMinute",
+            "type": "short-input",
+            "value": ""
+          },
+          "scheduleType": {
+            "id": "scheduleType",
+            "type": "dropdown",
+            "value": "daily"
+          },
+          "startWorkflow": {
+            "id": "startWorkflow",
+            "type": "dropdown",
+            "value": "manual"
+          },
+          "webhookSecret": {
+            "id": "webhookSecret",
+            "type": "short-input",
+            "value": ""
+          },
+          "weeklyDayTime": {
+            "id": "weeklyDayTime",
+            "type": "short-input",
+            "value": ""
+          },
+          "cronExpression": {
+            "id": "cronExpression",
+            "type": "short-input",
+            "value": ""
+          },
+          "providerConfig": {
+            "id": "providerConfig",
+            "type": "unknown",
+            "value": {}
+          },
+          "minutesInterval": {
+            "id": "minutesInterval",
+            "type": "short-input",
+            "value": ""
+          },
+          "webhookProvider": {
+            "id": "webhookProvider",
+            "type": "unknown",
+            "value": "slack"
+          },
+          "minutesStartingAt": {
+            "id": "minutesStartingAt",
+            "type": "short-input",
+            "value": ""
+          }
+        },
+        "outputs": {
+          "response": {
+            "type": {
+              "input": "any"
+            }
+          }
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 90
+        }
+      },
+      "24d9a35b-2c5f-4590-b156-2ed62d2649d3": {
+        "id": "24d9a35b-2c5f-4590-b156-2ed62d2649d3",
+        "type": "google_sheets",
+        "name": "leads",
+        "position": {
+          "x": 323.0503470496251,
+          "y": 1146.0148380777134
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 324,
+        "subBlocks": {
+          "range": {
+            "id": "range",
+            "type": "short-input",
+            "value": "Sheet1!A2:E1000"
+          },
+          "values": {
+            "id": "values",
+            "type": "long-input",
+            "value": null
+          },
+          "operation": {
+            "id": "operation",
+            "type": "dropdown",
+            "value": "read"
+          },
+          "credential": {
+            "id": "credential",
+            "type": "oauth-input",
+            "value": ""
+          },
+          "spreadsheetId": {
+            "id": "spreadsheetId",
+            "type": "file-selector",
+            "value": "1cp6EuTo81DUUKg-m5c_sqYr1QgaS3xmO9JY-Ph6a63k"
+          },
+          "insertDataOption": {
+            "id": "insertDataOption",
+            "type": "dropdown",
+            "value": null
+          },
+          "valueInputOption": {
+            "id": "valueInputOption",
+            "type": "dropdown",
+            "value": null
+          },
+          "manualSpreadsheetId": {
+            "id": "manualSpreadsheetId",
+            "type": "short-input",
+            "value": null
+          }
+        },
+        "outputs": {
+          "data": "json",
+          "metadata": "json",
+          "tableRange": "string",
+          "updatedRows": "number",
+          "updatedCells": "number",
+          "updatedRange": "string",
+          "updatedColumns": "number"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 324
+        }
+      },
+      "e967f963-4ff9-4f5f-8a28-a8fed6bfadab": {
+        "id": "e967f963-4ff9-4f5f-8a28-a8fed6bfadab",
+        "type": "condition",
+        "name": "Condition 1",
+        "position": {
+          "x": 1283.3597685151506,
+          "y": 1102.3353272811212
+        },
+        "enabled": true,
+        "horizontalHandles": true,
+        "isWide": false,
+        "advancedMode": false,
+        "triggerMode": false,
+        "height": 237.328125,
+        "subBlocks": {
+          "conditions": {
+            "id": "conditions",
+            "type": "condition-input",
+            "value": "[{\"id\":\"a6d17fd1-7266-4fcc-8c2f-1974add26a9b-if\",\"title\":\"if\",\"value\":\"<duplicates.result>.length !== 0\",\"showTags\":false,\"showEnvVars\":false,\"searchTerm\":\"\",\"cursorPosition\":1,\"activeSourceBlockId\":null},{\"id\":\"a6d17fd1-7266-4fcc-8c2f-1974add26a9b-else\",\"title\":\"else\",\"value\":\"\",\"showTags\":false,\"showEnvVars\":false,\"searchTerm\":\"\",\"cursorPosition\":0,\"activeSourceBlockId\":null}]"
+          }
+        },
+        "outputs": {
+          "content": "string",
+          "selectedPath": "json",
+          "conditionResult": "boolean",
+          "selectedConditionId": "string"
+        },
+        "data": {},
+        "layout": {
+          "measuredWidth": 317.328125,
+          "measuredHeight": 237.328125
+        }
+      }
+    },
+    "edges": [
+      {
+        "id": "87cebbb4-80a2-4b09-b9b1-bca59369fecc",
+        "source": "381ab565-b911-4bc5-a3cf-440aba195a24",
+        "target": "24d9a35b-2c5f-4590-b156-2ed62d2649d3",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "ee895b5e-6bf6-417b-8619-49e1cb052551",
+        "source": "24d9a35b-2c5f-4590-b156-2ed62d2649d3",
+        "target": "b0eb30e3-c46e-4bad-b5f1-a08baf59de55",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "a192264c-0b28-41c8-b41e-5a04975cc275",
+        "source": "b0eb30e3-c46e-4bad-b5f1-a08baf59de55",
+        "target": "e967f963-4ff9-4f5f-8a28-a8fed6bfadab",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "f5cd4b40-75a6-4b96-b34d-bbd0f56a8c17",
+        "source": "e967f963-4ff9-4f5f-8a28-a8fed6bfadab",
+        "target": "aff609fd-1b04-4ef1-95e8-1c28a7b99df9",
+        "sourceHandle": "condition-a6d17fd1-7266-4fcc-8c2f-1974add26a9b-if",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "2c25a4a1-d94a-4dc2-abbe-ea485340e69a",
+        "source": "aff609fd-1b04-4ef1-95e8-1c28a7b99df9",
+        "target": "4b2b8956-1690-4e4c-be97-aa4e610b598c",
+        "sourceHandle": "source",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "7cf4981d-9a1b-467b-8818-b2dee0b6b2b3",
+        "source": "e967f963-4ff9-4f5f-8a28-a8fed6bfadab",
+        "target": "7bf640e7-e3cb-4a5d-911e-f806c33370b8",
+        "sourceHandle": "condition-a6d17fd1-7266-4fcc-8c2f-1974add26a9b-else",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "23497570-5f7d-4bdd-a244-e358d137f461",
+        "source": "4b2b8956-1690-4e4c-be97-aa4e610b598c",
+        "target": "ad793686-cd39-4432-a288-5eb39f4fc6eb",
+        "sourceHandle": "loop-start-source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "56a4f8f2-1f5b-4ee0-b002-6f3a083db955",
+        "source": "ad793686-cd39-4432-a288-5eb39f4fc6eb",
+        "target": "3b3b9dfe-2d80-41a4-ae94-e059911d9b30",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      },
+      {
+        "id": "de279551-3cb3-4808-aa1e-e449a37eb06a",
+        "source": "52ad8f1d-4af4-4611-9cc6-1239973ba0bd",
+        "target": "381ab565-b911-4bc5-a3cf-440aba195a24",
+        "sourceHandle": "source",
+        "targetHandle": "target",
+        "type": "default",
+        "data": {}
+      }
+    ],
+    "loops": {},
+    "parallels": {}
+  }
+}
