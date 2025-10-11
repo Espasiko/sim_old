@@ -100,12 +100,46 @@
   - **Integraciones sencillas en IDE** (VSCode, JetBrains, Neovim) como sustituto de Copilot.
 - Artículo: *"Breaking Free from AI Subscriptions: Cost-Effective All-in-One Solution with OpenRouter"* (Parvez Hossain Saurav, Medium, 2025).
 
+## 11. Groq API Cookbook (hallazgos adicionales)
+- Repositorio oficial de Groq con ejemplos recientes: <https://github.com/groq/groq-api-cookbook>.
+- Estructura principal:
+  - **Tool Calling / JSON estructurado**: `tutorials/function-calling-101-ecommerce`, `function-calling-sql`, `parallel-tool-use`, `structured-output-instructor`. Resultan ideales para adaptar el `ToolRegistry` de Sim y forzar salidas válidas.
+  - **MCP Integrations**: ejemplos para BrowserUse, Browserbase, Firecrawl, Tavily, Exa y **HuggingFace MCP** (permite consultar catálogo de modelos en tiempo real). Útiles para crear MCP tools dentro de Sim.
+  - **RAG**: `benchmarking-rag-langchain`, `whisper-podcast-rag` muestran cómo combinar Groq con LangChain y Whisper para pipelines robustos.
+  - **Guardrails**: `llama-guard-safe-chatbot` integra Llama Guard como filtro de contenido; aplicable si se quieren moderar respuestas del Copilot.
+  - **Integraciones**: `litellm-proxy-groq`, `composio`, `crewai`, `langroid`, `opentelemetry` orientan sobre observabilidad y orquestación multiagente.
+
+### 11.1 Estrategia concreta con Groq para el Copilot local
+- Utilizar los ejemplos de **Function Calling** y **Structured Output** como base para el microservicio local que generará YAML/JSON restringido.
+- Implementar MCP de **Hugging Face** para consultar modelos, precios y licencias desde Sim (sin mantener bases de datos propias).
+- Aplicar `llama-guard-safe-chatbot` si se requiere moderación adicional en conversaciones.
+- Para RAG, reutilizar `benchmarking-rag-langchain` como blueprint al indexar los documentos de Sim.
+
+### 11.2 Costes en Groq (octubre 2025)
+- **Free tier**: sin cuota mensual, límite aproximado ~500k tokens/día y 30 RPS (según panel GroqCloud). Suficiente para desarrollo y uso diario del Copilot local.
+- **Pay-as-you-go** (referencia pública): `gpt-oss-20b` ≈ $0.20/M tokens de entrada y $0.24/M tokens de salida. Otros modelos open-source tienen precios similares o menores.
+- **Batch API**: 50 % de descuento para trabajos diferidos (útil para generación masiva de documentación de workflows).
+- **Prompt caching**: tokens de entrada repetidos se facturan al 50 %.
+
+### 11.3 Integración con OpenRouter
+- OpenRouter actúa como plan de contingencia: una sola API key para más de 300 modelos con facturación por uso. No hay cuotas mensuales.
+- Permite acceder a modelos que no estén en Groq (Claude, Gemini, etc.) sin suscripciones adicionales.
+- Puede usarse como fallback en el microservicio (ej. selección dinámica Groq → Codestral → OpenRouter).
+
+### 11.4 Recomendaciones prácticas
+1. Adoptar GroqCloud como proveedor principal del Copilot local (latencia baja y coste cero durante el free tier).
+2. Alternar con Codestral (Mistral) para generación de código/YAML y Cohere para razonamiento más narrativo.
+3. Guardar la configuración de Groq, Codestral, Cohere y OpenRouter en `.env` (sin cuotas, solo pay-as-you-go si exceden el free tier).
+4. Añadir a la colección RAG ejemplos del cookbook (especialmente tool-calls y JSON) para que el modelo aprenda patrones correctos.
+5. Monitorizar consumo desde la consola de Groq y aprovechar prompt caching/batch para reducir costes si se sale del free tier.
+
 ## 11. Modelos open-source (Hugging Face) recomendados
 - **Código/Reasoning**: `bigcode/starcoder2`, `deepseek-coder-v2`, `google/codegemma-7b`, `Qwen2.5-Coder`, `microsoft/Phi-4-mini`, `mistralai/codestral` (si liberan checkpoints).
 - **Instruct general**: `meta-llama/Llama-3.1-*`, `google/gemma-2-9b-it`, `NousResearch/Hermes-3`, `CohereForAI/aya-expanse`.
 - **Embeddings**: `sentence-transformers/all-MiniLM`, `intfloat/e5-mistral`, `bge-large`.
 - Consumo: local (llama.cpp/Ollama/TGI) o vía Inference Endpoints / OpenRouter / Groq.
-
+**tutoriales cookbook groq** 
+https://github.com/groq/groq-api-cookbook/tree/main/tutorials
 ## 12. Ejemplo de workflow de referencia
 - Archivo `ejemplos/Leads-generations-copy--SIM.json` (export Sim):
   - `state.blocks` → definición de nodos (tipo, params, posición).
